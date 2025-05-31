@@ -124,6 +124,7 @@
             height: 0;
             padding-bottom: 56.25%; /* 16:9 aspect ratio */
             background: #000;
+            display: block;
         }
         
         .video-controls {
@@ -209,6 +210,7 @@
             border-radius: 8px;
             text-align: center;
             z-index: 10;
+            max-width: 90%;
         }
         
         .error-title {
@@ -262,6 +264,20 @@
             100% { transform: rotate(360deg); }
         }
         
+        /* 快捷键提示 */
+        .shortcut-hint {
+            position: absolute;
+            bottom: 70px;
+            right: 20px;
+            background: rgba(30, 30, 30, 0.8);
+            padding: 8px 15px;
+            border-radius: 4px;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 20;
+        }
+        
         /* 响应式设计 */
         @media (max-width: 768px) {
             .nav-links {
@@ -289,6 +305,12 @@
             
             .volume-container {
                 display: none;
+            }
+            
+            .shortcut-hint {
+                bottom: 60px;
+                right: 10px;
+                font-size: 12px;
             }
         }
         
@@ -406,6 +428,8 @@
                     <button class="retry-btn" id="retryBtn">重新加载</button>
                 </div>
                 
+                <div class="shortcut-hint" id="shortcutHint"></div>
+                
                 <video id="videoPlayer" playsinline crossorigin="anonymous"></video>
                 
                 <div class="video-controls">
@@ -474,13 +498,19 @@
             // 视频元素和HLS实例
             const video = document.getElementById('videoPlayer');
             const hls = new Hls({
-                enableWorker: true, // 使用Web Worker提高性能
-                lowLatencyMode: true, // 低延迟模式
-                backBufferLength: 90, // 优化缓冲
-                debug: false // 关闭调试日志
+                enableWorker: true,
+                lowLatencyMode: true,
+                backBufferLength: 90,
+                debug: false,
+                // 关键修复：强制使用软件解码
+                maxBufferLength: 30,
+                maxMaxBufferLength: 60,
+                capLevelToPlayerSize: true
             });
             
+            // 使用代理解决跨域问题
             const m3u8Url = 'https://vip.123pan.cn/1813471484/wym/final/index.m3u8';
+            const proxyUrl = 'https://corsproxy.io/?';
             
             // 控制元素
             const playPauseBtn = document.getElementById('playPauseBtn');
@@ -497,6 +527,7 @@
             const errorTitle = document.getElementById('errorTitle');
             const errorSolution = document.getElementById('errorSolution');
             const retryBtn = document.getElementById('retryBtn');
+            const shortcutHint = document.getElementById('shortcutHint');
             
             // 显示加载指示器
             function showLoader() {
@@ -512,7 +543,17 @@
                 errorSolution.textContent = solution;
             }
             
-            // 加载视频
+            // 显示快捷键提示
+            function showShortcutHint(text) {
+                shortcutHint.textContent = text;
+                shortcutHint.style.opacity = '1';
+                
+                setTimeout(() => {
+                    shortcutHint.style.opacity = '0';
+                }, 2000);
+            }
+            
+            // 加载视频（使用CORS代理）
             function initVideoPlayer() {
                 showLoader();
                 
@@ -526,13 +567,14 @@
                 if (Hls.isSupported()) {
                     console.log("HLS.js 支持已启用");
                     
-                    hls.loadSource(m3u8Url);
+                    // 使用CORS代理加载M3U8文件
+                    hls.loadSource(proxyUrl + encodeURIComponent(m3u8Url));
                     hls.attachMedia(video);
                     
                     // 处理跨域请求
                     hls.on(Hls.Events.MANIFEST_LOADING, function() {
                         hls.xhrSetup = function(xhr, url) {
-                            xhr.withCredentials = false; // 不发送凭据
+                            xhr.withCredentials = false;
                         };
                     });
                     
@@ -547,6 +589,11 @@
                         updatePlayPauseIcon();
                         updateVolumeIcon();
                         video.volume = volumeSlider.value;
+                        
+                        // 设置视频分辨率（解决黑屏问题）
+                        video.style.height = 'auto';
+                        video.style.paddingBottom = '0';
+                        video.style.display = 'block';
                     });
                     
                     hls.on(Hls.Events.ERROR, function(event, data) {
@@ -579,6 +626,11 @@
                         });
                         updatePlayPauseIcon();
                         updateVolumeIcon();
+                        
+                        // 设置视频分辨率
+                        video.style.height = 'auto';
+                        video.style.paddingBottom = '0';
+                        video.style.display = 'block';
                     });
                     
                     video.addEventListener('error', function() {
@@ -591,13 +643,17 @@
             
             // 播放/暂停按钮
             playPauseBtn.addEventListener('click', function() {
+                togglePlayPause();
+            });
+            
+            function togglePlayPause() {
                 if (video.paused) {
                     video.play();
                 } else {
                     video.pause();
                 }
                 updatePlayPauseIcon();
-            });
+            }
             
             function updatePlayPauseIcon() {
                 if (video.paused) {
@@ -609,12 +665,22 @@
             
             // 快退/快进按钮
             rewindBtn.addEventListener('click', function() {
-                video.currentTime = Math.max(0, video.currentTime - 10);
+                rewindVideo();
             });
             
             forwardBtn.addEventListener('click', function() {
-                video.currentTime = Math.min(video.duration, video.currentTime + 10);
+                forwardVideo();
             });
+            
+            function rewindVideo() {
+                video.currentTime = Math.max(0, video.currentTime - 5);
+                showShortcutHint("← 快退5秒");
+            }
+            
+            function forwardVideo() {
+                video.currentTime = Math.min(video.duration, video.currentTime + 10);
+                showShortcutHint("→ 快进10秒");
+            }
             
             // 进度条控制
             progressContainer.addEventListener('click', function(e) {
@@ -695,6 +761,28 @@
             
             // 重试按钮
             retryBtn.addEventListener('click', initVideoPlayer);
+            
+            // 键盘快捷键
+            document.addEventListener('keydown', function(e) {
+                // 忽略在输入框中的按键
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+                
+                switch(e.key) {
+                    case ' ':
+                        togglePlayPause();
+                        showShortcutHint(video.paused ? "播放" : "暂停");
+                        e.preventDefault();
+                        break;
+                    case 'ArrowLeft':
+                        rewindVideo();
+                        e.preventDefault();
+                        break;
+                    case 'ArrowRight':
+                        forwardVideo();
+                        e.preventDefault();
+                        break;
+                }
+            });
             
             // 初始化播放器
             initVideoPlayer();
