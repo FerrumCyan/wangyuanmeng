@@ -424,8 +424,12 @@
                 
                 <div class="error-message" id="errorMessage">
                     <div class="error-title" id="errorTitle">视频加载失败</div>
-                    <div class="error-solution" id="errorSolution">请检查网络连接后重试</div>
-                    <button class="retry-btn" id="retryBtn">重新加载</button>
+                    <div class="error-solution" id="errorSolution">请尝试以下解决方案</div>
+                    <div class="solution-options">
+                        <button class="retry-btn" id="retryBtn">重试连接</button>
+                        <button class="retry-btn" id="proxyBtn1">使用代理1</button>
+                        <button class="retry-btn" id="proxyBtn2">使用代理2</button>
+                    </div>
                 </div>
                 
                 <div class="shortcut-hint" id="shortcutHint"></div>
@@ -495,22 +499,8 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // 视频元素和HLS实例
+            // 视频元素
             const video = document.getElementById('videoPlayer');
-            const hls = new Hls({
-                enableWorker: true,
-                lowLatencyMode: true,
-                backBufferLength: 90,
-                debug: false,
-                // 关键修复：强制使用软件解码
-                maxBufferLength: 30,
-                maxMaxBufferLength: 60,
-                capLevelToPlayerSize: true
-            });
-            
-            // 使用代理解决跨域问题
-            const m3u8Url = 'https://vip.123pan.cn/1813471484/wym/final/index.m3u8';
-            const proxyUrl = 'https://corsproxy.io/?';
             
             // 控制元素
             const playPauseBtn = document.getElementById('playPauseBtn');
@@ -527,7 +517,26 @@
             const errorTitle = document.getElementById('errorTitle');
             const errorSolution = document.getElementById('errorSolution');
             const retryBtn = document.getElementById('retryBtn');
+            const proxyBtn1 = document.getElementById('proxyBtn1');
+            const proxyBtn2 = document.getElementById('proxyBtn2');
             const shortcutHint = document.getElementById('shortcutHint');
+            
+            // 原始视频URL
+            const originalM3u8Url = 'https://vip.123pan.cn/1813471484/wym/final/index.m3u8';
+            
+            // CORS代理选项
+            const proxyOptions = [
+                null, // 不使用代理
+                'https://corsproxy.io/?', 
+                'https://api.allorigins.win/raw?url=',
+                'https://cors-anywhere.herokuapp.com/'
+            ];
+            
+            // 当前使用的代理索引
+            let currentProxyIndex = 0;
+            
+            // HLS实例
+            let hls = null;
             
             // 显示加载指示器
             function showLoader() {
@@ -553,9 +562,25 @@
                 }, 2000);
             }
             
-            // 加载视频（使用CORS代理）
-            function initVideoPlayer() {
+            // 获取带代理的视频URL
+            function getProxiedUrl(proxyIndex) {
+                const proxy = proxyOptions[proxyIndex];
+                if (!proxy) return originalM3u8Url;
+                return proxy + encodeURIComponent(originalM3u8Url);
+            }
+            
+            // 初始化视频播放器
+            function initVideoPlayer(proxyIndex = 0) {
                 showLoader();
+                
+                // 清除之前的HLS实例
+                if (hls) {
+                    hls.destroy();
+                    hls = null;
+                }
+                
+                // 设置当前代理索引
+                currentProxyIndex = proxyIndex;
                 
                 // 解决跨域问题
                 video.crossOrigin = "anonymous";
@@ -564,11 +589,25 @@
                 video.setAttribute('playsinline', 'true');
                 video.setAttribute('webkit-playsinline', 'true');
                 
+                // 创建新的HLS实例
+                hls = new Hls({
+                    enableWorker: true,
+                    lowLatencyMode: true,
+                    backBufferLength: 90,
+                    debug: false,
+                    maxBufferLength: 30,
+                    maxMaxBufferLength: 60,
+                    capLevelToPlayerSize: true
+                });
+                
+                // 获取代理后的URL
+                const videoUrl = getProxiedUrl(proxyIndex);
+                console.log(`尝试使用代理 ${proxyIndex}: ${videoUrl}`);
+                
                 if (Hls.isSupported()) {
                     console.log("HLS.js 支持已启用");
                     
-                    // 使用CORS代理加载M3U8文件
-                    hls.loadSource(proxyUrl + encodeURIComponent(m3u8Url));
+                    hls.loadSource(videoUrl);
                     hls.attachMedia(video);
                     
                     // 处理跨域请求
@@ -590,7 +629,7 @@
                         updateVolumeIcon();
                         video.volume = volumeSlider.value;
                         
-                        // 设置视频分辨率（解决黑屏问题）
+                        // 设置视频分辨率
                         video.style.height = 'auto';
                         video.style.paddingBottom = '0';
                         video.style.display = 'block';
@@ -602,7 +641,14 @@
                         if (data.fatal) {
                             switch(data.type) {
                                 case Hls.ErrorTypes.NETWORK_ERROR:
-                                    showError("网络错误", "请检查您的网络连接后重试");
+                                    // 尝试下一个代理
+                                    const nextProxyIndex = (currentProxyIndex + 1) % proxyOptions.length;
+                                    if (nextProxyIndex !== currentProxyIndex) {
+                                        showError("网络错误", `正在尝试备用连接 ${nextProxyIndex+1}/${proxyOptions.length}`);
+                                        setTimeout(() => initVideoPlayer(nextProxyIndex), 1500);
+                                    } else {
+                                        showError("网络错误", "所有连接尝试失败，请检查网络");
+                                    }
                                     break;
                                 case Hls.ErrorTypes.MEDIA_ERROR:
                                     showError("媒体错误", "视频格式可能不受支持");
@@ -616,7 +662,7 @@
                 } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
                     // Safari原生支持
                     console.log("使用Safari原生HLS支持");
-                    video.src = m3u8Url;
+                    video.src = videoUrl;
                     
                     video.addEventListener('loadedmetadata', function() {
                         loader.style.display = 'none';
@@ -634,7 +680,14 @@
                     });
                     
                     video.addEventListener('error', function() {
-                        showError("Safari播放失败", "视频可能已移动或格式不支持");
+                        // 尝试下一个代理
+                        const nextProxyIndex = (currentProxyIndex + 1) % proxyOptions.length;
+                        if (nextProxyIndex !== currentProxyIndex) {
+                            showError("Safari播放失败", `正在尝试备用连接 ${nextProxyIndex+1}/${proxyOptions.length}`);
+                            setTimeout(() => initVideoPlayer(nextProxyIndex), 1500);
+                        } else {
+                            showError("Safari播放失败", "所有连接尝试失败");
+                        }
                     });
                 } else {
                     showError("浏览器不支持", "请使用Chrome、Firefox或Safari浏览器");
@@ -760,7 +813,18 @@
             });
             
             // 重试按钮
-            retryBtn.addEventListener('click', initVideoPlayer);
+            retryBtn.addEventListener('click', function() {
+                initVideoPlayer(0);
+            });
+            
+            // 代理按钮
+            proxyBtn1.addEventListener('click', function() {
+                initVideoPlayer(1);
+            });
+            
+            proxyBtn2.addEventListener('click', function() {
+                initVideoPlayer(2);
+            });
             
             // 键盘快捷键
             document.addEventListener('keydown', function(e) {
