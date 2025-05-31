@@ -197,14 +197,99 @@
             margin-left: 15px;
         }
         
-        .quality-selector {
-            margin-left: 15px;
-            background: #333;
-            color: #fff;
+        /* 错误信息 */
+        .error-message {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(30, 30, 30, 0.9);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            z-index: 10;
+        }
+        
+        .error-title {
+            color: #ff5555;
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .error-solution {
+            color: #bbbbbb;
+            margin-bottom: 15px;
+        }
+        
+        .retry-btn {
+            background: #bb86fc;
+            color: #121212;
             border: none;
-            padding: 5px 10px;
+            padding: 8px 20px;
             border-radius: 4px;
             cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        
+        .retry-btn:hover {
+            background: #3700b3;
+            color: #fff;
+        }
+        
+        /* 加载指示器 */
+        .loader {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+            z-index: 5;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(187, 134, 252, 0.3);
+            border-top: 5px solid #bb86fc;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .video-container {
+                margin: 20px auto;
+            }
+            
+            .video-controls {
+                padding: 8px 10px;
+            }
+            
+            .control-btn {
+                margin: 0 3px;
+                font-size: 14px;
+                width: 32px;
+                height: 32px;
+            }
+            
+            .progress-container {
+                margin: 0 10px;
+            }
+            
+            .volume-container {
+                display: none;
+            }
         }
         
         /* 视频信息区域 */
@@ -252,63 +337,6 @@
         .video-description {
             line-height: 1.8;
             color: #ccc;
-        }
-        
-        /* 响应式设计 */
-        @media (max-width: 768px) {
-            .nav-links {
-                display: none;
-            }
-            
-            .video-container {
-                margin: 20px auto;
-            }
-            
-            .video-controls {
-                padding: 8px 10px;
-            }
-            
-            .control-btn {
-                margin: 0 3px;
-                font-size: 14px;
-                width: 32px;
-                height: 32px;
-            }
-            
-            .progress-container {
-                margin: 0 10px;
-            }
-            
-            .volume-container, .quality-selector {
-                display: none;
-            }
-            
-            .video-title {
-                font-size: 22px;
-            }
-        }
-        
-        /* 加载指示器 */
-        .loader {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            display: none;
-        }
-        
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid rgba(187, 134, 252, 0.3);
-            border-top: 5px solid #bb86fc;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
         }
         
         /* 页脚样式 */
@@ -371,7 +399,14 @@
                 <div class="loader" id="loader">
                     <div class="spinner"></div>
                 </div>
-                <video id="videoPlayer" controls></video>
+                
+                <div class="error-message" id="errorMessage">
+                    <div class="error-title" id="errorTitle">视频加载失败</div>
+                    <div class="error-solution" id="errorSolution">请检查网络连接后重试</div>
+                    <button class="retry-btn" id="retryBtn">重新加载</button>
+                </div>
+                
+                <video id="videoPlayer" playsinline crossorigin="anonymous"></video>
                 
                 <div class="video-controls">
                     <button class="control-btn" id="playPauseBtn"><i class="fas fa-play"></i></button>
@@ -388,13 +423,6 @@
                         <button class="control-btn" id="volumeBtn"><i class="fas fa-volume-up"></i></button>
                         <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="1">
                     </div>
-                    
-                    <select class="quality-selector" id="qualitySelector">
-                        <option value="auto">自动质量</option>
-                        <option value="high">高清 (1080p)</option>
-                        <option value="medium">标清 (720p)</option>
-                        <option value="low">流畅 (480p)</option>
-                    </select>
                     
                     <button class="control-btn fullscreen-btn" id="fullscreenBtn"><i class="fas fa-expand"></i></button>
                 </div>
@@ -445,7 +473,13 @@
         document.addEventListener('DOMContentLoaded', function() {
             // 视频元素和HLS实例
             const video = document.getElementById('videoPlayer');
-            const hls = new Hls();
+            const hls = new Hls({
+                enableWorker: true, // 使用Web Worker提高性能
+                lowLatencyMode: true, // 低延迟模式
+                backBufferLength: 90, // 优化缓冲
+                debug: false // 关闭调试日志
+            });
+            
             const m3u8Url = 'https://vip.123pan.cn/1813471484/wym/final/index.m3u8';
             
             // 控制元素
@@ -459,58 +493,99 @@
             const volumeSlider = document.getElementById('volumeSlider');
             const fullscreenBtn = document.getElementById('fullscreenBtn');
             const loader = document.getElementById('loader');
-            const qualitySelector = document.getElementById('qualitySelector');
+            const errorMessage = document.getElementById('errorMessage');
+            const errorTitle = document.getElementById('errorTitle');
+            const errorSolution = document.getElementById('errorSolution');
+            const retryBtn = document.getElementById('retryBtn');
+            
+            // 显示加载指示器
+            function showLoader() {
+                loader.style.display = 'block';
+                errorMessage.style.display = 'none';
+            }
+            
+            // 显示错误信息
+            function showError(title, solution) {
+                loader.style.display = 'none';
+                errorMessage.style.display = 'block';
+                errorTitle.textContent = title;
+                errorSolution.textContent = solution;
+            }
             
             // 加载视频
             function initVideoPlayer() {
-                loader.style.display = 'block';
+                showLoader();
+                
+                // 解决跨域问题
+                video.crossOrigin = "anonymous";
+                
+                // 修复iOS设备兼容性
+                video.setAttribute('playsinline', 'true');
+                video.setAttribute('webkit-playsinline', 'true');
                 
                 if (Hls.isSupported()) {
+                    console.log("HLS.js 支持已启用");
+                    
                     hls.loadSource(m3u8Url);
                     hls.attachMedia(video);
                     
+                    // 处理跨域请求
+                    hls.on(Hls.Events.MANIFEST_LOADING, function() {
+                        hls.xhrSetup = function(xhr, url) {
+                            xhr.withCredentials = false; // 不发送凭据
+                        };
+                    });
+                    
                     hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                        console.log("视频加载成功");
                         loader.style.display = 'none';
-                        video.play();
+                        video.play().catch(e => {
+                            console.error("自动播放失败:", e);
+                            showError("需要用户交互", "请点击播放按钮开始观看");
+                        });
                         
-                        // 更新播放器UI
                         updatePlayPauseIcon();
                         updateVolumeIcon();
-                        
-                        // 设置初始音量
                         video.volume = volumeSlider.value;
                     });
                     
                     hls.on(Hls.Events.ERROR, function(event, data) {
-                        console.error('HLS error:', data);
+                        console.error('HLS错误:', data);
+                        
                         if (data.fatal) {
                             switch(data.type) {
                                 case Hls.ErrorTypes.NETWORK_ERROR:
-                                    alert('网络错误，请重试');
-                                    hls.startLoad();
+                                    showError("网络错误", "请检查您的网络连接后重试");
                                     break;
                                 case Hls.ErrorTypes.MEDIA_ERROR:
-                                    alert('媒体错误，尝试恢复');
-                                    hls.recoverMediaError();
+                                    showError("媒体错误", "视频格式可能不受支持");
                                     break;
                                 default:
-                                    hls.destroy();
-                                    initVideoPlayer();
+                                    showError("播放错误", "无法加载视频，请尝试刷新页面");
                                     break;
                             }
                         }
                     });
                 } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
                     // Safari原生支持
+                    console.log("使用Safari原生HLS支持");
                     video.src = m3u8Url;
+                    
                     video.addEventListener('loadedmetadata', function() {
                         loader.style.display = 'none';
-                        video.play();
+                        video.play().catch(e => {
+                            console.error("Safari自动播放失败:", e);
+                            showError("需要用户交互", "请点击播放按钮开始观看");
+                        });
                         updatePlayPauseIcon();
                         updateVolumeIcon();
                     });
+                    
+                    video.addEventListener('error', function() {
+                        showError("Safari播放失败", "视频可能已移动或格式不支持");
+                    });
                 } else {
-                    alert('您的浏览器不支持播放此视频');
+                    showError("浏览器不支持", "请使用Chrome、Firefox或Safari浏览器");
                 }
             }
             
@@ -543,18 +618,21 @@
             
             // 进度条控制
             progressContainer.addEventListener('click', function(e) {
-                const pos = (e.pageX - this.getBoundingClientRect().left) / this.offsetWidth;
+                const rect = this.getBoundingClientRect();
+                const pos = (e.clientX - rect.left) / this.offsetWidth;
                 video.currentTime = pos * video.duration;
             });
             
             // 更新进度条
             video.addEventListener('timeupdate', function() {
-                const percent = (video.currentTime / video.duration) * 100;
-                progressBar.style.width = percent + '%';
-                
-                // 更新时间显示
-                currentTimeDisplay.textContent = 
-                    formatTime(video.currentTime) + ' / ' + formatTime(video.duration);
+                if (!isNaN(video.duration)) {
+                    const percent = (video.currentTime / video.duration) * 100;
+                    progressBar.style.width = percent + '%';
+                    
+                    // 更新时间显示
+                    currentTimeDisplay.textContent = 
+                        formatTime(video.currentTime) + ' / ' + formatTime(video.duration);
+                }
             });
             
             function formatTime(seconds) {
@@ -615,12 +693,8 @@
                 }
             });
             
-            // 质量选择器
-            qualitySelector.addEventListener('change', function() {
-                // 在实际应用中，这里会根据选择改变视频质量
-                // 由于我们只有单一源，这里仅做示例
-                alert('已切换到 ' + this.options[this.selectedIndex].text);
-            });
+            // 重试按钮
+            retryBtn.addEventListener('click', initVideoPlayer);
             
             // 初始化播放器
             initVideoPlayer();
