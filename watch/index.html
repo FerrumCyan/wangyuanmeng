@@ -142,9 +142,9 @@
             font-size: 16px;
             cursor: pointer;
             margin: 0 5px;
-            width: 36px;
+            min-width: 36px;
             height: 36px;
-            border-radius: 50%;
+            border-radius: 4px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -295,7 +295,7 @@
             .control-btn {
                 margin: 0 3px;
                 font-size: 14px;
-                width: 32px;
+                min-width: 32px;
                 height: 32px;
             }
             
@@ -438,8 +438,8 @@
                 
                 <div class="video-controls">
                     <button class="control-btn" id="playPauseBtn"><i class="fas fa-play"></i></button>
-<!--                     <button class="control-btn" id="rewindBtn"><i class="fas fa-backward"></i></button>
-                    <button class="control-btn" id="forwardBtn"><i class="fas fa-forward"></i></button> -->
+                    <button class="control-btn" id="rewindBtn">-5</button>
+                    <button class="control-btn" id="forwardBtn">+10</button>
                     
                     <div class="progress-container" id="progressContainer">
                         <div id="progressBar"></div>
@@ -707,14 +707,14 @@
                 }
             }
             
-            // // 快退/快进按钮
-            // rewindBtn.addEventListener('click', function() {
-            //     rewindVideo();
-            // });
+            // 快退/快进按钮
+            rewindBtn.addEventListener('click', function() {
+                rewindVideo();
+            });
             
-            // forwardBtn.addEventListener('click', function() {
-            //     forwardVideo();
-            // });
+            forwardBtn.addEventListener('click', function() {
+                forwardVideo();
+            });
             
             function rewindVideo() {
                 video.currentTime = Math.max(0, video.currentTime - 5);
