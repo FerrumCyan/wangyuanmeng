@@ -460,11 +460,8 @@
             <div class="footer-content">
                 <ul class="footer-links">
                     <li><a href="https://ferrumcyan.top/">铁皮青网</a></li>
-                    <li><a href="#">使用条款</a></li>
-                    <li><a href="#">隐私政策</a></li>
-                    <li><a href="#">联系我们</a></li>
                 </ul>
-                <p class="copyright">Copyright &copy; 2024 <a href="https://ferrumcyan.top/" target="_blank">FerrumCyan</a>. 保留所有权利</p>
+                <p class="copyright">Copyright &copy; <a href="https://ferrumcyan.top/" target="_blank">FerrumCyan</a></p>
             </div>
         </div>
     </footer>
@@ -494,10 +491,10 @@
                         renderMaps(data.maps);
                     })
                     .catch(error => {
-                        console.error('加载地图数据失败:', error);
+                        console.error('数据加载失败:', error);
                         loadingState.innerHTML = `
                             <div style="color: #ff6b6b; background: rgba(255, 107, 107, 0.1); padding: 20px; border-radius: 8px;">
-                                <h3 style="margin-bottom: 15px;">地图数据加载失败</h3>
+                                <h3 style="margin-bottom: 15px;">数据加载失败</h3>
                                 <p>${error.message}</p>
                                 <p style="margin-top: 15px;">请检查网络连接或稍后再试</p>
                                 <button onclick="location.reload()" style="margin-top: 20px; padding: 10px 25px; background: #bb86fc; color: #121212; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: all 0.3s;">
@@ -513,8 +510,8 @@
                 if (!maps || maps.length === 0) {
                     mapsContainer.innerHTML = `
                         <div style="grid-column: 1 / -1; text-align: center; padding: 50px; background: rgba(30,30,30,0.5); border-radius: 12px;">
-                            <h3 style="color: #bb86fc; margin-bottom: 20px;">暂无地图数据</h3>
-                            <p>当前没有可用的非遗地图，请稍后再来查看</p>
+                            <h3 style="color: #bb86fc; margin-bottom: 20px;">数据为空</h3>
+                            <p>尚未发布相关内容，请联系相关人员</p>
                         </div>
                     `;
                     return;
