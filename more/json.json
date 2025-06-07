@@ -1,18 +1,46 @@
 {
   "maps": [
     {
-      "id": "map1",
-      "title": "丝绸之路非遗分布图",
-      "author": "文化遗产研究院",
-      "thumbnail": "https://example.com/map1-thumb.jpg",
-      "largeImage": "https://example.com/map1-large.jpg"
+      "id": "1",
+      "title": "7103高镱心.jpg",
+      "author": "高镱心",
+      "thumbnail": "/more/7103高镱心.jpg",
+      "largeImage": "/more/7103高镱心.jpg"
     },
     {
-      "id": "map2",
-      "title": "西北地区非遗传承图",
-      "author": "民族艺术研究所",
-      "thumbnail": "https://example.com/map2-thumb.jpg",
-      "largeImage": "https://example.com/map2-large.jpg"
+      "id": "2",
+      "title": "7113张扬.jpeg",
+      "author": "7113张扬.jpeg",
+      "thumbnail": "/more/7113张扬.jpeg",
+      "largeImage": "/more/7113张扬.jpeg"
+    },
+    {
+      "id": "3",
+      "title": "7204刘语菡.png",
+      "author": "刘语菡",
+      "thumbnail": "/more/7204刘语菡.png",
+      "largeImage": "/more/7204刘语菡.png"
+    },
+    {
+      "id": "4",
+      "title": "7205 罗匀佳.jpg",
+      "author": "罗匀佳",
+      "thumbnail": "/more/7205 罗匀佳.jpg",
+      "largeImage": "/more/7205 罗匀佳.jpg"
+    },
+    {
+      "id": "5",
+      "title": "7209吴恩昕.jpg",
+      "author": "7209吴恩昕",
+      "thumbnail": "/more/7209吴恩昕.jpg",
+      "largeImage": "/more/7209吴恩昕.jpg"
+    },
+    {
+      "id": "155",
+      "title": "7217张佳晔.jpg",
+      "author": "张佳晔",
+      "thumbnail": "/more/7217张佳晔.jpg",
+      "largeImage": "/more/7217张佳晔.jpg"
     }
   ]
 }
