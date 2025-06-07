@@ -1,0 +1,18 @@
+{
+  "maps": [
+    {
+      "id": "map1",
+      "title": "丝绸之路非遗分布图",
+      "author": "文化遗产研究院",
+      "thumbnail": "https://example.com/map1-thumb.jpg",
+      "largeImage": "https://example.com/map1-large.jpg"
+    },
+    {
+      "id": "map2",
+      "title": "西北地区非遗传承图",
+      "author": "民族艺术研究所",
+      "thumbnail": "https://example.com/map2-thumb.jpg",
+      "largeImage": "https://example.com/map2-large.jpg"
+    }
+  ]
+}
