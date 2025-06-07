@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>关於 - 丝路之声 · 非遗乐章</title>
+    <link rel="shortcut icon" href="/logo.ico" type="image/x-icon">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #e0e0e0;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        a {
+            color: #bb86fc;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        a:hover {
+            color: #3700b3;
+            text-shadow: 0 0 8px rgba(187, 134, 252, 0.6);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* 导航栏样式 */
+        header {
+            background: rgba(30, 30, 30, 0.95);
+            padding: 15px 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid rgba(187, 134, 252, 0.2);
+        }
+        
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo-img {
+            height: 42px;
+            width: auto;
+            border-radius: 50%;
+            border: 2px solid #bb86fc;
+        }
+        
+        .logo-text {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffffff;
+            text-shadow: 0 0 10px rgba(187, 134, 252, 0.7);
+            letter-spacing: 1px;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 25px;
+        }
+        
+        .nav-links li a {
+            font-weight: 500;
+            padding: 8px 0;
+            position: relative;
+            font-size: 17px;
+        }
+        
+        .nav-links li a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #bb86fc, #7c4dff);
+            transition: width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .nav-links li a:hover::after {
+            width: 100%;
+        }
+        
+        .nav-links li a.active {
+            color: #7c4dff;
+            font-weight: 600;
+        }
+        
+        /* 主内容区域 */
+        main {
+            padding: 60px 0;
+            position: relative;
+        }
+        
+        .page-header {
+            text-align: center;
+            margin-bottom: 50px;
+            position: relative;
+            padding-top: 20px;
+        }
+        
+        .page-header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, #bb86fc, transparent);
+            border-radius: 2px;
+        }
+        
+        .page-header h1 {
+            font-size: 3.2rem;
+            color: #ffffff;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+            text-shadow: 0 0 15px rgba(187, 134, 252, 0.4);
+            position: relative;
+            display: inline-block;
+        }
+        
+        .page-header h1::after {
+            content: "";
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #7c4dff, transparent);
+        }
+        
+        .page-header p {
+            font-size: 1.2rem;
+            color: #d1c4e9;
+            max-width: 700px;
+            margin: 25px auto 0;
+            line-height: 1.8;
+            text-shadow: 0 0 8px rgba(187, 134, 252, 0.3);
+        }
+        
+        .maps-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 35px;
+            margin-top: 40px;
+        }
+        
+        .map-card {
+            background: rgba(30, 30, 30, 0.7);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+            transition: all 0.4s ease;
+            position: relative;
+            border: 1px solid rgba(187, 134, 252, 0.3);
+            height: 360px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .map-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.6), 0 0 25px rgba(187, 134, 252, 0.4);
+            border-color: rgba(187, 134, 252, 0.6);
+        }
+        
+        .map-thumbnail {
+            position: relative;
+            width: 100%;
+            height: 230px;
+            overflow: hidden;
+        }
+        
+        .map-thumbnail::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%);
+            z-index: 1;
+        }
+        
+        .map-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s ease;
+        }
+        
+        .map-card:hover .map-thumbnail img {
+            transform: scale(1.1);
+        }
+        
+        .map-info {
+            padding: 22px;
+            position: relative;
+            z-index: 2;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .map-title {
+            font-size: 1.4rem;
+            color: #ffffff;
+            margin-bottom: 8px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+        }
+        
+        .map-author {
+            font-size: 1rem;
+            color: #bb86fc;
+            display: flex;
+            align-items: center;
+        }
+        
+        .map-author::before {
+            content: "👤";
+            margin-right: 8px;
+            font-size: 0.9rem;
+        }
+        
+        /* 加载状态 */
+        .loading-container {
+            text-align: center;
+            padding: 60px 0;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            margin: 0 auto 25px;
+            border: 5px solid rgba(187, 134, 252, 0.3);
+            border-top: 5px solid #bb86fc;
+            border-radius: 50%;
+            animation: spin 1.2s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            font-size: 1.3rem;
+            color: #bb86fc;
+            text-shadow: 0 0 10px rgba(187, 134, 252, 0.5);
+        }
+        
+        /* 模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            overflow: auto;
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-content {
+            margin: 60px auto;
+            display: block;
+            max-width: 90%;
+            max-height: 85vh;
+            border-radius: 8px;
+            border: 2px solid #bb86fc;
+            box-shadow: 0 0 40px rgba(187, 134, 252, 0.6);
+        }
+        
+        .close {
+            position: absolute;
+            top: 25px;
+            right: 35px;
+            color: #fff;
+            font-size: 45px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-shadow: 0 0 10px rgba(0,0,0,0.8);
+        }
+        
+        .close:hover {
+            color: #bb86fc;
+            transform: scale(1.1);
+        }
+        
+        /* 页脚样式 */
+        footer {
+            background: rgba(30, 30, 30, 0.85);
+            padding: 35px 0;
+            text-align: center;
+            margin-top: 60px;
+            border-top: 1px solid rgba(187, 134, 252, 0.15);
+            backdrop-filter: blur(5px);
+        }
+        
+        .footer-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .footer-links {
+            display: flex;
+            list-style: none;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+        
+        .footer-links li a {
+            font-size: 1.1rem;
+            padding: 8px 15px;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+        
+        .footer-links li a:hover {
+            background: rgba(187, 134, 252, 0.15);
+            box-shadow: 0 0 15px rgba(187, 134, 252, 0.3);
+        }
+        
+        .copyright {
+            font-size: 1rem;
+            color: #aaa;
+            margin-top: 15px;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .nav-links {
+                gap: 15px;
+            }
+            
+            .nav-links li a {
+                font-size: 15px;
+            }
+            
+            .page-header h1 {
+                font-size: 2.4rem;
+            }
+            
+            .page-header p {
+                font-size: 1.1rem;
+            }
+            
+            .maps-container {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            }
+        }
+        
+        @media (max-width: 576px) {
+            nav {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .logo-text {
+                font-size: 1.4rem;
+            }
+            
+            .page-header h1 {
+                font-size: 2rem;
+            }
+            
+            .footer-links {
+                flex-direction: column;
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <header>
+        <div class="container">
+            <nav>
+                <a href="/" class="logo-container">
+                    <img src="/logo.jpg" alt="网站Logo" class="logo-img">
+                    <span class="logo-text">丝路之声 · 非遗乐章</span>
+                </a>
+                <ul class="nav-links">
+                    <li><a href="/watch/">观看视频</a></li>
+                    <li><a href="/staff/">人员列表</a></li>
+                    <li><a href="/map/">非遗地图</a></li>
+                    <li><a href="/introduction/">剧情介绍</a></li>
+                    <li><a href="/more/" class="active">了解更多</a></li>
+                    <li><a href="/about/">关于我们</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    
+    <!-- 主内容区域 -->
+    <main>
+        <div class="container">
+            <div class="page-header">
+                <h1>宣传海报</h1>
+                <p>快来看看同学们制作的宣传海报吧！</p>
+            </div>
+            
+            <!-- 加载状态 -->
+            <div id="loadingState" class="loading-container">
+                <div class="spinner"></div>
+                <p class="loading-text">正在加载，请稍候</p>
+            </div>
+            
+            <!-- 地图容器 -->
+            <div id="mapsContainer" class="maps-container"></div>
+        </div>
+    </main>
+    
+    <!-- 大图模态框 -->
+    <div id="imageModal" class="modal">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <img class="modal-content" id="modalImage">
+    </div>
+    
+    <!-- 底部页脚 -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <ul class="footer-links">
+                    <li><a href="https://ferrumcyan.top/">铁皮青网</a></li>
+                </ul>
+                <p class="copyright">Copyright &copy; <a href="https://ferrumcyan.top/" target="_blank">FerrumCyan</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            const loadingState = document.getElementById('loadingState');
+            const mapsContainer = document.getElementById('mapsContainer');
+            
+            // 从JSON文件加载数据
+            function loadMapsData() {
+                const jsonUrl = '/about/json.json';
+                
+                fetch(jsonUrl)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`网络响应错误: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        // 隐藏加载状态
+                        loadingState.style.display = 'none';
+                        
+                        // 渲染地图卡片
+                        renderMaps(data.maps);
+                    })
+                    .catch(error => {
+                        console.error('数据加载失败:', error);
+                        loadingState.innerHTML = `
+                            <div style="color: #ff6b6b; background: rgba(255, 107, 107, 0.1); padding: 20px; border-radius: 8px;">
+                                <h3 style="margin-bottom: 15px;">数据加载失败</h3>
+                                <p>${error.message}</p>
+                                <p style="margin-top: 15px;">请检查网络连接或稍后再试</p>
+                                <button onclick="location.reload()" style="margin-top: 20px; padding: 10px 25px; background: #bb86fc; color: #121212; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: all 0.3s;">
+                                    重新加载
+                                </button>
+                            </div>
+                        `;
+                    });
+            }
+            
+            // 渲染地图卡片
+            function renderMaps(maps) {
+                if (!maps || maps.length === 0) {
+                    mapsContainer.innerHTML = `
+                        <div style="grid-column: 1 / -1; text-align: center; padding: 50px; background: rgba(30,30,30,0.5); border-radius: 12px;">
+                            <h3 style="color: #bb86fc; margin-bottom: 20px;">数据为空</h3>
+                            <p>尚未发布相关内容，请联系相关人员</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                mapsContainer.innerHTML = '';
+                
+                maps.forEach(map => {
+                    const card = document.createElement('div');
+                    card.className = 'map-card';
+                    card.innerHTML = `
+                        <div class="map-thumbnail">
+                            <img src="${map.thumbnail}" alt="${map.title}" loading="lazy">
+                        </div>
+                        <div class="map-info">
+                            <h3 class="map-title">${map.title}</h3>
+                            <p class="map-author">${map.author}</p>
+                        </div>
+                    `;
+                    card.addEventListener('click', () => openModal(map.largeImage));
+                    mapsContainer.appendChild(card);
+                });
+            }
+            
+            // 初始加载数据
+            loadMapsData();
+        });
+        
+        // 打开模态框显示大图
+        function openModal(imageUrl) {
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImage');
+            
+            modalImg.src = imageUrl;
+            modal.style.display = "block";
+            
+            // 阻止背景滚动
+            document.body.style.overflow = "hidden";
+        }
+        
+        // 关闭模态框
+        function closeModal() {
+            const modal = document.getElementById('imageModal');
+            modal.style.display = "none";
+            
+            // 恢复背景滚动
+            document.body.style.overflow = "auto";
+        }
+        
+        // 点击模态框外部关闭
+        window.onclick = function(event) {
+            const modal = document.getElementById('imageModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+        
+        // ESC键关闭模态框
+        document.addEventListener('keydown', function(event) {
+            const modal = document.getElementById('imageModal');
+            if (event.key === "Escape" && modal.style.display === "block") {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
